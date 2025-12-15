@@ -101,11 +101,8 @@ log_level: info
 [info] connected to Discord IPC
 [info] handshake successful
 [info] Zwift detected as running
-[info] presence updated: %{"cmd" => "SET_ACTIVITY", "data" => %{"application_id" => "0000000000000000000", "assets" => %{"large_image" => "1449021117804183602", "large_text" => "Filling water bottles"}, "details" => "Picking a kit", "metadata" => %{}, "name" => "Zwift", "platform" => "desktop", "state" => "Idling", "timestamps" => %{"start" => 1765695545000}, "type" => 0}, "evt" => nil, "nonce" => "89f459c765c5a880f6a243a5dbb01af9"}
-[info] activity changed: %{type: :workout, world: "Watopia", route: "Loopin Lava", workout_name: "Active Recovery", pacer_name: nil}
 ```
 
-TODO: make the info easier to read
 
 ## Options
 
@@ -169,24 +166,23 @@ size: 4.6 MB, lines: 53622
 
 simulating checks: 600 lines/check
 
-final state: Idling
+final state: idling
 state changes: 3
 
-check 11: [18:00:03] L6000: Idling → Active Recovery (Workout)
-check 24: [19:58:26] L13800: Active Recovery (Workout) → Loopin Lava, Watopia (Free Ride)
-check 25: [20:02:46] L14400: Loopin Lava, Watopia (Free Ride) → Idling
+check 11: [18:00:03] L6000: idling → workout name="Active Recovery"
+check 24: [19:58:26] L13800: workout name="Active Recovery" → free_ride route="Loopin Lava" world="Watopia"
+check 25: [20:02:46] L14400: free_ride route="Loopin Lava" world="Watopia" → idling
 
 events:
-  [18:03:43] L6146: set_workout workout=Active Recovery
-  [18:03:44] L6160: setting_route route=Loopin Lava
-  [18:03:44] L6196: save_activity world=Watopia
-  [18:03:50] L6401: setting_route route=Loopin Lava
-  [18:06:38] L6928: save_activity world=Watopia
+  [18:03:43] L6146: set_workout workout="Active Recovery"
+  [18:03:44] L6160: setting_route route="Loopin Lava"
+  [18:03:44] L6196: save_activity world="Watopia"
   ...
-  [19:57:23] L13733: save_activity world=Watopia
+  [19:57:23] L13733: save_activity world="Watopia"
   [20:02:06] L14098: completed_workout
-  [20:02:06] L14108: save_activity world=Watopia
+  [20:02:06] L14108: save_activity world="Watopia"
   [20:03:04] L14877: end_activity
+  [20:03:04] L14879: save_activity world="Active Recovery on Loopin Lava in Watopia"
 ```
 
 ### Project Structure

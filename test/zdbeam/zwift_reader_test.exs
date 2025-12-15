@@ -1,6 +1,6 @@
 defmodule Zdbeam.ZwiftReaderTest do
   use ExUnit.Case
-  alias Zdbeam.LogParser
+  alias Zdbeam.ZwiftLogParser
 
   describe "parse_log_lines/1" do
     test "detects activity start from SaveActivity log line" do
@@ -8,7 +8,7 @@ defmodule Zdbeam.ZwiftReaderTest do
         "[23:19:29] INFO LEVEL: [SaveActivityService] ZNet::SaveActivity calling zwift_network::save_activity with {name: Zwift - Watopia, uploadTo3P: False, fitFileNameToUpload: /Users/darcien/Documents/Zwift/Activities/inProgressActivity.fit, fitFileNameShort: 2025-12-10-23-19-29.fit}"
       ]
 
-      result = LogParser.parse_log_lines(lines)
+      result = ZwiftLogParser.parse_log_lines(lines)
 
       assert result == %{
                type: :free_ride,
@@ -25,7 +25,7 @@ defmodule Zdbeam.ZwiftReaderTest do
         "[23:19:29] INFO LEVEL: [Route] Setting Route:   The Classic"
       ]
 
-      result = LogParser.parse_log_lines(lines)
+      result = ZwiftLogParser.parse_log_lines(lines)
 
       assert result == %{
                type: :free_ride,
@@ -43,7 +43,7 @@ defmodule Zdbeam.ZwiftReaderTest do
         "[23:47:17] INFO LEVEL: [SaveActivityService] DeleteCurrentActivity with {activityName: Zwift - Mountain Mash in Watopia}"
       ]
 
-      result = LogParser.parse_log_lines(lines)
+      result = ZwiftLogParser.parse_log_lines(lines)
 
       assert result == nil
     end
@@ -55,7 +55,7 @@ defmodule Zdbeam.ZwiftReaderTest do
         "[22:00:24] INFO LEVEL: [SaveActivityService] FinalizeCurrentActivity Close FIT File"
       ]
 
-      result = LogParser.parse_log_lines(lines)
+      result = ZwiftLogParser.parse_log_lines(lines)
 
       assert result == nil
     end
@@ -68,7 +68,7 @@ defmodule Zdbeam.ZwiftReaderTest do
         "[23:24:52] INFO LEVEL: [SaveActivityService] DeleteCurrentActivity with {activityName: Zwift - The Classic in Watopia}"
       ]
 
-      result = LogParser.parse_log_lines(lines)
+      result = ZwiftLogParser.parse_log_lines(lines)
 
       assert result == nil
     end
@@ -80,7 +80,7 @@ defmodule Zdbeam.ZwiftReaderTest do
         "[22:03:09] INFO LEVEL: [Route] Setting Route:   Double Parked"
       ]
 
-      result = LogParser.parse_log_lines(lines)
+      result = ZwiftLogParser.parse_log_lines(lines)
 
       # Route change after EndCurrentActivity should be ignored (no activity active)
       assert result == nil
@@ -93,7 +93,7 @@ defmodule Zdbeam.ZwiftReaderTest do
         "[23:25:00] INFO LEVEL: [Route] Setting Route:   Volcano Circuit"
       ]
 
-      result = LogParser.parse_log_lines(lines)
+      result = ZwiftLogParser.parse_log_lines(lines)
 
       assert result == %{
                type: :free_ride,
@@ -118,7 +118,7 @@ defmodule Zdbeam.ZwiftReaderTest do
           "[23:19:29] INFO LEVEL: [SaveActivityService] ZNet::SaveActivity calling zwift_network::save_activity with {name: #{activity_name}, uploadTo3P: False}"
         ]
 
-        result = LogParser.parse_log_lines(lines)
+        result = ZwiftLogParser.parse_log_lines(lines)
 
         assert result.world == expected_world,
                "Expected world '#{expected_world}' from activity name '#{activity_name}', got '#{result.world}'"
@@ -134,7 +134,7 @@ defmodule Zdbeam.ZwiftReaderTest do
         "[23:19:33] INFO LEVEL: [Route] Setting Route:   The Classic"
       ]
 
-      result = LogParser.parse_log_lines(lines)
+      result = ZwiftLogParser.parse_log_lines(lines)
 
       assert result == %{
                type: :free_ride,
@@ -151,7 +151,7 @@ defmodule Zdbeam.ZwiftReaderTest do
         "[23:19:31] ERROR LEVEL: [LOADER] LOADER_LoadGdeFile_LEAN() Unable to load texture file"
       ]
 
-      result = LogParser.parse_log_lines(lines)
+      result = ZwiftLogParser.parse_log_lines(lines)
 
       assert result == nil
     end
@@ -161,7 +161,7 @@ defmodule Zdbeam.ZwiftReaderTest do
         "[23:19:29] INFO LEVEL: [Route] Setting Route:   The Classic"
       ]
 
-      result = LogParser.parse_log_lines(lines)
+      result = ZwiftLogParser.parse_log_lines(lines)
 
       assert result == nil
     end
@@ -173,7 +173,7 @@ defmodule Zdbeam.ZwiftReaderTest do
         "[21:34:41] Got Notable Moment: STARTED WORKOUT"
       ]
 
-      result = LogParser.parse_log_lines(lines)
+      result = ZwiftLogParser.parse_log_lines(lines)
 
       assert result == %{
                type: :workout,
@@ -190,7 +190,7 @@ defmodule Zdbeam.ZwiftReaderTest do
         "[21:34:41] INFO LEVEL: [Workouts] WorkoutDatabase::SetActiveWorkout(1. Ramp It Up!)"
       ]
 
-      result = LogParser.parse_log_lines(lines)
+      result = ZwiftLogParser.parse_log_lines(lines)
 
       assert result == %{
                type: :workout,
@@ -208,7 +208,7 @@ defmodule Zdbeam.ZwiftReaderTest do
         "[23:19:29] INFO LEVEL: [Route] Setting Route:   The Classic"
       ]
 
-      result = LogParser.parse_log_lines(lines)
+      result = ZwiftLogParser.parse_log_lines(lines)
 
       assert result == %{
                type: :workout,
@@ -225,7 +225,7 @@ defmodule Zdbeam.ZwiftReaderTest do
         "[22:01:50] DEBUG LEVEL: [StructuredEvents] Sending PacePartnerJoined structured event for D. Maria"
       ]
 
-      result = LogParser.parse_log_lines(lines)
+      result = ZwiftLogParser.parse_log_lines(lines)
 
       assert result == %{
                type: :robo_pacer,
@@ -243,7 +243,7 @@ defmodule Zdbeam.ZwiftReaderTest do
         "[22:04:33] DEBUG LEVEL: [StructuredEvents] Sending PacePartnerLeft structured event for D. Maria (exit: EXIT_RANGE)"
       ]
 
-      result = LogParser.parse_log_lines(lines)
+      result = ZwiftLogParser.parse_log_lines(lines)
 
       assert result == %{
                type: :free_ride,
@@ -261,7 +261,7 @@ defmodule Zdbeam.ZwiftReaderTest do
         "[22:01:50] DEBUG LEVEL: [StructuredEvents] Sending PacePartnerJoined structured event for D. Maria"
       ]
 
-      result = LogParser.parse_log_lines(lines)
+      result = ZwiftLogParser.parse_log_lines(lines)
 
       assert result == %{
                type: :robo_pacer,
@@ -279,7 +279,7 @@ defmodule Zdbeam.ZwiftReaderTest do
         "[19:49:56] INFO LEVEL: [Workouts] WorkoutDatabase::HandleEvent(COMPLETED_WORKOUT): 4020009.000000"
       ]
 
-      result = LogParser.parse_log_lines(lines)
+      result = ZwiftLogParser.parse_log_lines(lines)
 
       assert result == %{
                type: :free_ride,
@@ -305,7 +305,7 @@ defmodule Zdbeam.ZwiftReaderTest do
         "[19:49:56] INFO LEVEL: [Workouts] WorkoutDatabase::HandleEvent(COMPLETED_WORKOUT): 4020009.000000"
       ]
 
-      result = LogParser.parse_log_lines(lines, initial_state)
+      result = ZwiftLogParser.parse_log_lines(lines, initial_state)
 
       assert result == %{
                type: :free_ride,
@@ -322,7 +322,7 @@ defmodule Zdbeam.ZwiftReaderTest do
       line =
         "[23:19:29] INFO LEVEL: [SaveActivityService] ZNet::SaveActivity calling zwift_network::save_activity with {name: Zwift - Watopia, uploadTo3P: False}"
 
-      result = LogParser.extract_world_from_activity_name(line)
+      result = ZwiftLogParser.extract_world_from_activity_name(line)
 
       assert result == "Watopia"
     end
@@ -331,7 +331,7 @@ defmodule Zdbeam.ZwiftReaderTest do
       line =
         "[23:19:29] INFO LEVEL: [SaveActivityService] ZNet::SaveActivity calling zwift_network::save_activity with {name: Zwift - Makuri Islands, uploadTo3P: False}"
 
-      result = LogParser.extract_world_from_activity_name(line)
+      result = ZwiftLogParser.extract_world_from_activity_name(line)
 
       assert result == "Makuri Islands"
     end
@@ -339,7 +339,7 @@ defmodule Zdbeam.ZwiftReaderTest do
     test "returns Unknown for malformed line" do
       line = "[23:19:29] Some random log line"
 
-      result = LogParser.extract_world_from_activity_name(line)
+      result = ZwiftLogParser.extract_world_from_activity_name(line)
 
       assert result == "Unknown"
     end
@@ -349,7 +349,7 @@ defmodule Zdbeam.ZwiftReaderTest do
     test "extracts route name" do
       line = "[23:19:29] INFO LEVEL: [Route] Setting Route:   The Classic"
 
-      result = LogParser.extract_route_name(line)
+      result = ZwiftLogParser.extract_route_name(line)
 
       assert result == "The Classic"
     end
@@ -357,7 +357,7 @@ defmodule Zdbeam.ZwiftReaderTest do
     test "extracts route name with extra spaces" do
       line = "[23:19:29] INFO LEVEL: [Route] Setting Route:   Volcano Circuit  "
 
-      result = LogParser.extract_route_name(line)
+      result = ZwiftLogParser.extract_route_name(line)
 
       assert result == "Volcano Circuit"
     end
@@ -365,7 +365,7 @@ defmodule Zdbeam.ZwiftReaderTest do
     test "returns nil for malformed line" do
       line = "[23:19:29] Some random log line"
 
-      result = LogParser.extract_route_name(line)
+      result = ZwiftLogParser.extract_route_name(line)
 
       assert result == nil
     end
@@ -376,7 +376,7 @@ defmodule Zdbeam.ZwiftReaderTest do
       line =
         "[22:01:50] DEBUG LEVEL: [StructuredEvents] Sending PacePartnerJoined structured event for D. Maria"
 
-      result = LogParser.extract_pacer_name_from_event(line)
+      result = ZwiftLogParser.extract_pacer_name_from_event(line)
 
       assert result == "D. Maria"
     end
@@ -385,7 +385,7 @@ defmodule Zdbeam.ZwiftReaderTest do
       line =
         "[22:04:33] DEBUG LEVEL: [StructuredEvents] Sending PacePartnerLeft structured event for D. Maria (exit: EXIT_RANGE)"
 
-      result = LogParser.extract_pacer_name_from_event(line)
+      result = ZwiftLogParser.extract_pacer_name_from_event(line)
 
       assert result == "D. Maria"
     end
@@ -394,7 +394,7 @@ defmodule Zdbeam.ZwiftReaderTest do
       line =
         "[22:01:50] DEBUG LEVEL: [StructuredEvents] Sending PacePartnerJoined structured event for C. Cadence"
 
-      result = LogParser.extract_pacer_name_from_event(line)
+      result = ZwiftLogParser.extract_pacer_name_from_event(line)
 
       assert result == "C. Cadence"
     end
@@ -402,7 +402,7 @@ defmodule Zdbeam.ZwiftReaderTest do
     test "returns nil for malformed line" do
       line = "[23:19:29] Some random log line"
 
-      result = LogParser.extract_pacer_name_from_event(line)
+      result = ZwiftLogParser.extract_pacer_name_from_event(line)
 
       assert result == nil
     end
@@ -413,7 +413,7 @@ defmodule Zdbeam.ZwiftReaderTest do
       line =
         "[21:34:41] INFO LEVEL: [Workouts] WorkoutDatabase::SetActiveWorkout(1. Ramp It Up!)"
 
-      result = LogParser.extract_workout_name(line)
+      result = ZwiftLogParser.extract_workout_name(line)
 
       assert result == "1. Ramp It Up!"
     end
@@ -422,7 +422,7 @@ defmodule Zdbeam.ZwiftReaderTest do
       line =
         "[21:34:41] INFO LEVEL: [Workouts] WorkoutDatabase::SetActiveWorkout(FTP Test - 20min)"
 
-      result = LogParser.extract_workout_name(line)
+      result = ZwiftLogParser.extract_workout_name(line)
 
       assert result == "FTP Test - 20min"
     end
@@ -430,7 +430,7 @@ defmodule Zdbeam.ZwiftReaderTest do
     test "returns nil for malformed line" do
       line = "[23:19:29] Some random log line"
 
-      result = LogParser.extract_workout_name(line)
+      result = ZwiftLogParser.extract_workout_name(line)
 
       assert result == nil
     end

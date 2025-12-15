@@ -23,7 +23,8 @@ defmodule Zdbeam.ZwiftReader do
   use GenServer
   require Logger
 
-  alias Zdbeam.LogParser
+  alias Zdbeam.ActivityFormatter
+  alias Zdbeam.ZwiftLogParser
 
   defmodule State do
     defstruct [
@@ -148,7 +149,8 @@ defmodule Zdbeam.ZwiftReader do
       end
 
     if activity != state.current_activity do
-      Logger.info("activity changed: #{inspect(activity)}")
+      Logger.info("activity changed: #{ActivityFormatter.for_log(activity)}")
+      Logger.debug("activity details: #{inspect(activity)}")
       update_discord_presence(activity, new_start_time)
     end
 
@@ -219,7 +221,7 @@ defmodule Zdbeam.ZwiftReader do
       activity =
         new_content
         |> String.split("\n")
-        |> LogParser.parse_log_lines(current_activity)
+        |> ZwiftLogParser.parse_log_lines(current_activity)
 
       {activity, byte_size(content)}
     else
@@ -251,7 +253,7 @@ defmodule Zdbeam.ZwiftReader do
   end
 
   defp update_discord_presence(activity, start_time) do
-    {details, state} = LogParser.format_activity(activity)
+    {details, state} = ActivityFormatter.for_discord(activity)
     world_image = get_world_image(activity.world)
 
     {large_image, large_text, small_image} =

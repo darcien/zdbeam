@@ -154,7 +154,8 @@ defmodule Zdbeam.DiscordRPC do
       :ok ->
         case receive_message(state.socket) do
           {:ok, response} ->
-            Logger.info("presence updated: #{inspect(response)}")
+            Logger.info("presence updated")
+            Logger.debug("Discord response: #{inspect(response)}")
             {:noreply, %{state | activity: activity}}
 
           {:error, reason} ->
@@ -183,7 +184,8 @@ defmodule Zdbeam.DiscordRPC do
       :ok ->
         case receive_message(state.socket) do
           {:ok, response} ->
-            Logger.info("presence cleared: #{inspect(response)}")
+            Logger.info("presence cleared")
+            Logger.debug("Discord response: #{inspect(response)}")
             {:noreply, %{state | activity: nil}}
 
           {:error, reason} ->

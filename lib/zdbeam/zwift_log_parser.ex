@@ -1,4 +1,4 @@
-defmodule Zdbeam.LogParser do
+defmodule Zdbeam.ZwiftLogParser do
   @moduledoc """
   Parses Zwift log files to extract activity information.
 
@@ -68,7 +68,7 @@ defmodule Zdbeam.LogParser do
       iex> lines = [
       ...>   "[23:19:29] INFO LEVEL: [SaveActivityService] ZNet::SaveActivity calling zwift_network::save_activity with {name: Zwift - Watopia, uploadTo3P: False}"
       ...> ]
-      iex> Zdbeam.LogParser.parse_log_lines(lines)
+      iex> Zdbeam.ZwiftLogParser.parse_log_lines(lines)
       %{type: :free_ride, world: "Watopia", route: nil, workout_name: nil, pacer_name: nil}
 
   """
@@ -156,7 +156,7 @@ defmodule Zdbeam.LogParser do
   ## Examples
 
       iex> line = "[23:19:29] INFO LEVEL: [SaveActivityService] ZNet::SaveActivity calling zwift_network::save_activity with {name: Zwift - Watopia, uploadTo3P: False}"
-      iex> Zdbeam.LogParser.extract_world_from_activity_name(line)
+      iex> Zdbeam.ZwiftLogParser.extract_world_from_activity_name(line)
       "Watopia"
 
   """
@@ -173,7 +173,7 @@ defmodule Zdbeam.LogParser do
   ## Examples
 
       iex> line = "[23:19:29] INFO LEVEL: [Route] Setting Route:   The Classic"
-      iex> Zdbeam.LogParser.extract_route_name(line)
+      iex> Zdbeam.ZwiftLogParser.extract_route_name(line)
       "The Classic"
 
   """
@@ -190,7 +190,7 @@ defmodule Zdbeam.LogParser do
   ## Examples
 
       iex> line = "[21:34:41] INFO LEVEL: [Workouts] WorkoutDatabase::SetActiveWorkout(1. Ramp It Up!)"
-      iex> Zdbeam.LogParser.extract_workout_name(line)
+      iex> Zdbeam.ZwiftLogParser.extract_workout_name(line)
       "1. Ramp It Up!"
 
   """
@@ -207,11 +207,11 @@ defmodule Zdbeam.LogParser do
   ## Examples
 
       iex> line = "[22:01:50] DEBUG LEVEL: [StructuredEvents] Sending PacePartnerJoined structured event for D. Maria"
-      iex> Zdbeam.LogParser.extract_pacer_name_from_event(line)
+      iex> Zdbeam.ZwiftLogParser.extract_pacer_name_from_event(line)
       "D. Maria"
 
       iex> line = "[22:04:33] DEBUG LEVEL: [StructuredEvents] Sending PacePartnerLeft structured event for D. Maria (exit: EXIT_RANGE)"
-      iex> Zdbeam.LogParser.extract_pacer_name_from_event(line)
+      iex> Zdbeam.ZwiftLogParser.extract_pacer_name_from_event(line)
       "D. Maria"
 
   """
@@ -219,65 +219,6 @@ defmodule Zdbeam.LogParser do
     case Regex.run(~r/structured event for ([^\(]+)/, line) do
       [_, name] -> String.trim(name)
       _ -> nil
-    end
-  end
-
-  @doc """
-  Formats an activity state into human-readable details and type label.
-
-  Returns a tuple of `{details, type_label}` where `type_label` is the string
-  representation of the activity type (e.g., "Workout", "Free Ride") suitable
-  for display in Discord presence or debug output. Returns `{details, nil}` when
-  no type label is applicable (e.g., when idling).
-
-  Note: This is distinct from `activity.type` which is an atom (`:workout`, `:free_ride`, etc.).
-
-  ## Examples
-
-      iex> Zdbeam.LogParser.format_activity(nil)
-      {"Idling", nil}
-
-      iex> activity = %{type: :workout, workout_name: "FTP Test"}
-      iex> Zdbeam.LogParser.format_activity(activity)
-      {"FTP Test", "Workout"}
-
-      iex> activity = %{type: :free_ride, world: "Watopia", route: "Volcano Circuit"}
-      iex> Zdbeam.LogParser.format_activity(activity)
-      {"Volcano Circuit, Watopia", "Free Ride"}
-
-  """
-  def format_activity(nil), do: {"Idling", nil}
-
-  def format_activity(activity) do
-    # details: What the user is currently doing (top line)
-    # state: The user's current party status (bottom, next to time elapsed)
-
-    case activity.type do
-      :workout ->
-        details = activity.workout_name || "Working Hard"
-        {details, "Workout"}
-
-      :robo_pacer ->
-        details =
-          case {activity.pacer_name, activity.route} do
-            {nil, nil} -> "RoboPacer"
-            {nil, route} -> route
-            {name, nil} -> name
-            {name, route} -> "#{name} @ #{route}"
-          end
-
-        {details, "RoboPacer"}
-
-      :free_ride ->
-        details =
-          case {activity.world, activity.route} do
-            {nil, nil} -> "Lost in Zwift"
-            {world, nil} -> world
-            {nil, route} -> route
-            {world, route} -> "#{route}, #{world}"
-          end
-
-        {details, "Free Ride"}
     end
   end
 end

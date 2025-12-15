@@ -11,8 +11,9 @@ defmodule Zdbeam.LogSimulator do
       :ok
   """
 
-  alias Zdbeam.LogParser
+  alias Zdbeam.ActivityFormatter
   alias Zdbeam.LogPatterns
+  alias Zdbeam.ZwiftLogParser
 
   @patterns LogPatterns.patterns()
 
@@ -70,7 +71,7 @@ defmodule Zdbeam.LogSimulator do
       |> Enum.chunk_every(chunk_size)
       |> Enum.with_index(1)
       |> Enum.reduce({nil, []}, fn {chunk, check_num}, {current_state, changes} ->
-        new_state = LogParser.parse_log_lines(chunk, current_state)
+        new_state = ZwiftLogParser.parse_log_lines(chunk, current_state)
 
         timestamp = extract_time(Enum.at(chunk, 0) || "")
         line_num = (check_num - 1) * chunk_size
@@ -189,25 +190,25 @@ defmodule Zdbeam.LogSimulator do
   defp extract_event_details(line, event_type) do
     case event_type do
       :save_activity ->
-        world = LogParser.extract_world_from_activity_name(line)
-        if world != "Unknown", do: " world=#{world}", else: ""
+        world = ZwiftLogParser.extract_world_from_activity_name(line)
+        if world != "Unknown", do: ~s( world="#{world}"), else: ""
 
       :set_workout ->
-        case LogParser.extract_workout_name(line) do
+        case ZwiftLogParser.extract_workout_name(line) do
           nil -> ""
-          workout -> " workout=#{workout}"
+          workout -> ~s( workout="#{workout}")
         end
 
       :setting_route ->
-        case LogParser.extract_route_name(line) do
+        case ZwiftLogParser.extract_route_name(line) do
           nil -> ""
-          route -> " route=#{route}"
+          route -> ~s( route="#{route}")
         end
 
       event when event in [:pacer_joined, :pacer_left] ->
-        case LogParser.extract_pacer_name_from_event(line) do
+        case ZwiftLogParser.extract_pacer_name_from_event(line) do
           nil -> ""
-          name -> " pacer=#{name}"
+          name -> ~s( pacer="#{name}")
         end
 
       event when event in [:completed_workout, :discard_activity, :end_activity] ->
@@ -219,10 +220,7 @@ defmodule Zdbeam.LogSimulator do
   end
 
   defp format_state(state) do
-    case LogParser.format_activity(state) do
-      {details, nil} -> details
-      {details, type_label} -> "#{details} (#{type_label})"
-    end
+    ActivityFormatter.for_log(state)
   end
 
   defp format_bytes(bytes) when bytes < 1024, do: "#{bytes} bytes"
