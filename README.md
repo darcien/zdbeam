@@ -199,7 +199,7 @@ lib/
     ├── log_simulator.ex        # Log parsing simulator for debugging
     ├── zwift_log_parser.ex     # Log file parser
     ├── zwift_log_patterns.ex   # Log pattern matching rules
-    └── zwift_reader.ex         # Zwift activity monitor (GenServer)
+    └── zwift_mon.ex            # Zwift activity monitor (GenServer)
 ```
 
 ## License

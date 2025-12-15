@@ -16,7 +16,7 @@ defmodule Zdbeam do
 
   """
   def status do
-    zwift_status = Zdbeam.ZwiftReader.get_status()
+    zwift_status = Zdbeam.ZwiftMon.get_status()
 
     %{
       zwift: zwift_status,

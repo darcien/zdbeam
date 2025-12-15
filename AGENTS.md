@@ -35,7 +35,7 @@ Discord Rich Presence for Zwift. Pure Elixir implementation, standalone binaries
 - `Zdbeam.LogSimulator` - Log parsing simulator for debugging
 - `Zdbeam.ZwiftLogParser` - Log file parser
 - `Zdbeam.ZwiftLogPatterns` - Log pattern matching rules
-- `Zdbeam.ZwiftReader` - Zwift activity monitor (GenServer)
+- `Zdbeam.ZwiftMon` - Zwift activity monitor (GenServer)
 
 **Configuration**: CLI args, not env vars. Required: `--app-id`, optional: `--check-interval`, `--log-level`
 

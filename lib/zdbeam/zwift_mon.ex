@@ -1,4 +1,4 @@
-defmodule Zdbeam.ZwiftReader do
+defmodule Zdbeam.ZwiftMon do
   @moduledoc """
   Monitors Zwift activity and reports it to Discord RPC.
 
@@ -8,10 +8,10 @@ defmodule Zdbeam.ZwiftReader do
   ## Examples
 
       # Automatically started by supervisor
-      {:ok, _pid} = Zdbeam.ZwiftReader.start_link([])
+      {:ok, _pid} = Zdbeam.ZwiftMon.start_link([])
 
       # Check current status
-      Zdbeam.ZwiftReader.get_status()
+      Zdbeam.ZwiftMon.get_status()
       #=> %{
       #     zwift_running: true,
       #     current_activity: %{type: :free_ride, world: "Watopia", ...},
@@ -47,7 +47,7 @@ defmodule Zdbeam.ZwiftReader do
 
   ## Examples
 
-      iex> Zdbeam.ZwiftReader.get_status()
+      iex> Zdbeam.ZwiftMon.get_status()
       %{
         zwift_running: true,
         current_activity: %{type: :workout, workout_name: "FTP Test", ...},

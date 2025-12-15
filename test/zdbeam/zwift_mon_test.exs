@@ -1,4 +1,4 @@
-defmodule Zdbeam.ZwiftReaderTest do
+defmodule Zdbeam.ZwiftMonTest do
   use ExUnit.Case
   alias Zdbeam.ZwiftLogParser
 

@@ -3,7 +3,7 @@ defmodule Zdbeam.Application do
   Main application supervisor for Zdbeam.
 
   Starts and supervises the core processes:
-  - ZwiftReader: Monitors Zwift activity
+  - ZwiftMon: Monitors Zwift activity
   - DiscordRPC: Handles Discord Rich Presence updates
   """
 
@@ -23,7 +23,7 @@ defmodule Zdbeam.Application do
           Logger.info("starting application")
 
           children = [
-            {Zdbeam.ZwiftReader, []},
+            {Zdbeam.ZwiftMon, []},
             {Zdbeam.DiscordRPC, []}
           ]
 
