@@ -113,6 +113,9 @@ defmodule Zdbeam.Application do
       Application.put_env(:zdbeam, :check_interval, :timer.seconds(opts[:check_interval]))
     end
 
+    # TODO: remove test mode or replace with static mode
+    # Having a static activity to test the presence itself is useful,
+    # doing race or RoboPacer while holding a keyboard is not easy.
     test_mode = opts[:test_mode] || false
     Application.put_env(:zdbeam, :test_mode, test_mode)
 

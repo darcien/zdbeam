@@ -4,7 +4,9 @@ CLI tool that adds Discord Rich Presence integration for Zwift.
 
 ## Why
 
-TBA.
+I have this itch to make something with Elixir.
+And I'm in the mood for indoor cycling.
+So why not?
 
 ## Features
 
@@ -19,6 +21,14 @@ TBA.
 3. Parses world, route, workout, and RoboPacer information
 4. Updates Discord Rich Presence via local IPC connection
 
+Zwift, Discord, and zdbeam must all be running on the same machine.
+
+In theory we can have Zwift and Discord run on different machines,
+have zdbeam run on each machine, have each zdbeam connect to each other
+via `Node.connect/1` and have Discord RPC over the network.
+
+I have no need for that at the moment though, so it's unimplemented.
+
 ## Screenshots
 
 TBA.
@@ -26,7 +36,7 @@ TBA.
 ## Platform Support
 
 Currently supports macOS only.
-For other platforms, might work with slight changes but are untested.
+For other platforms like Linux or Windows, might work with slight changes but have not been tested.
 
 ## Prerequisites
 
@@ -43,19 +53,12 @@ For other platforms, might work with slight changes but are untested.
 - Zig 0.15.2 (for building binary with Burrito)
 - XZ (for building binary with Burrito)
 
-### Discord Application Setup
-
-1. Create application at https://discord.com/developers/applications
-2. Copy Application ID from General Information tab
-3. (Optional) Add Rich Presence assets under "Rich Presence" → "Art Assets":
-   - `zwift_logo` - Main application icon
-   - `world_watopia`, `world_london`, etc. - World-specific icons
-
 ## Installation
 
 ### Binary Release
 
 No releases available yet.
+I'm not interested in code-signing at the moment.
 
 ### Building from Source
 
@@ -68,14 +71,23 @@ MIX_ENV=prod mix release zdbeam
 
 Binary output: `burrito_out/zdbeam_macos`
 
+## Discord Application Setup
+
+1. Create application at https://discord.com/developers/applications
+2. Copy Application ID from General Information tab
+3. (Optional) Add Rich Presence assets under "Rich Presence" → "Art Assets":
+   - `zwift_logo` - Main application icon
+   - `world_watopia`, `world_london`, etc. - World-specific icons
+
+
 ## Usage
 
 ```sh
-./zdbeam_macos --app-id "YOUR_DISCORD_APP_ID"
+zdbeam --app-id "YOUR_DISCORD_APP_ID"
 ```
 
 ```sh
-./zdbeam_macos \
+zdbeam \
   --app-id "YOUR_DISCORD_APP_ID" \
   --check-interval 15 \
   --log-level debug
@@ -84,7 +96,7 @@ Binary output: `burrito_out/zdbeam_macos`
 ### Example Output
 
 ```
-$ ./zdbeam_macos --app-id "0000000000000000000"
+$ zdbeam --app-id "0000000000000000000"
 starting
 app_id: 0000000000000000000
 check_interval: 5s
@@ -130,7 +142,7 @@ If your activity isn't being detected properly, you can simulate parsing a log f
 
 ```sh
 # Using the built binary
-./burrito_out/zdbeam_macos --test-log ~/Documents/Zwift/Logs/Log.txt
+zdbeam --test-log ~/Documents/Zwift/Logs/Log.txt
 
 # During development
 mix zdbeam.test_log ~/Documents/Zwift/Logs/Log.txt
@@ -139,8 +151,7 @@ mix zdbeam.test_log ~/Documents/Zwift/Logs/Log.txt
 This will show:
 - How the parser processes your log file
 - State transitions (idle → active → workout → etc.)
-- Timeline of key events (SaveActivity, SetActiveWorkout, etc.)
-- Help identify why activities might not be detected
+- Timeline of key events (set_workout, setting_route, etc.)
 
 Example output:
 ```
@@ -163,23 +174,11 @@ events:
   [18:03:44] L6196: save_activity world=Watopia
   [18:03:50] L6401: setting_route route=Loopin Lava
   [18:06:38] L6928: save_activity world=Watopia
-  [18:16:39] L7561: save_activity world=Watopia
-  [18:26:40] L8208: save_activity world=Watopia
-  [18:37:15] L8925: save_activity world=Watopia
-  [18:47:16] L9409: save_activity world=Watopia
-  [18:57:17] L9995: save_activity world=Watopia
-  [19:07:18] L10759: save_activity world=Watopia
-  [19:17:19] L11417: save_activity world=Watopia
-  [19:27:20] L11952: save_activity world=Watopia
-  [19:37:21] L12423: save_activity world=Watopia
-  [19:47:22] L13283: save_activity world=Watopia
+  ...
   [19:57:23] L13733: save_activity world=Watopia
   [20:02:06] L14098: completed_workout
   [20:02:06] L14108: save_activity world=Watopia
   [20:03:04] L14877: end_activity
-  [20:03:04] L14879: save_activity world=Active Recovery on Loopin Lava in Watopia
-  [20:03:20] L15078: setting_route route=Loopin Lava
-  [22:47:43] L53492: setting_route route=Loopin Lava
 ```
 
 ### Building
