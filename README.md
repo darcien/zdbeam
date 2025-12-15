@@ -164,7 +164,9 @@ mix zdbeam.test_log ~/Documents/Zwift/Logs/Log.txt
 log: /Users/darcien/Documents/Zwift/Logs/Log.txt
 size: 4.6 MB, lines: 53622
 
-simulating checks: 600 lines/check
+simulating checks: every 5s
+
+time range: 17:54:52 → 22:47:45 (4h 52m)
 
 final state: idling
 state changes: 3

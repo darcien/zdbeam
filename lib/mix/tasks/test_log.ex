@@ -6,24 +6,29 @@ defmodule Mix.Tasks.Zdbeam.TestLog do
 
       mix zdbeam.test_log <path>
       mix zdbeam.test_log ~/Documents/Zwift/Logs/Log.txt
-      mix zdbeam.test_log logs.txt --chunk-size 1000
+      mix zdbeam.test_log logs.txt --check-interval 10
+      mix zdbeam.test_log logs.txt -i 10
 
   ## Options
 
-    * `--chunk-size <n>` - Number of lines per check (default: 600)
+    * `-i, --check-interval <n>` - Seconds between checks (default: 5)
 
   """
 
   use Mix.Task
 
   @shortdoc "Test log file parsing for debugging"
+  @default_check_interval 5
 
   @impl Mix.Task
   def run(args) do
     {opts, paths, _} =
       OptionParser.parse(args,
         switches: [
-          chunk_size: :integer
+          check_interval: :integer
+        ],
+        aliases: [
+          i: :check_interval
         ]
       )
 
@@ -36,7 +41,7 @@ defmodule Mix.Tasks.Zdbeam.TestLog do
 
       [path | _] ->
         simulation_opts = [
-          chunk_size: opts[:chunk_size] || 600
+          check_interval: opts[:check_interval] || @default_check_interval
         ]
 
         case Zdbeam.LogSimulator.simulate_file(path, simulation_opts) do

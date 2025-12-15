@@ -5,7 +5,7 @@ defmodule Zdbeam.LogSimulator do
   ## Examples
 
       mix zdbeam.test_log ~/Documents/Zwift/Logs/Log.txt
-      mix zdbeam.test_log logs.txt --chunk-size 1000
+      mix zdbeam.test_log logs.txt --check-interval 5
 
       iex> LogSimulator.simulate_file("~/Documents/Zwift/Logs/Log.txt")
       :ok
@@ -16,21 +16,22 @@ defmodule Zdbeam.LogSimulator do
   alias Zdbeam.ZwiftLogParser
 
   @patterns LogPatterns.patterns()
+  @default_check_interval 5
 
   @doc """
   Simulates log parsing and shows state transitions.
 
   ## Options
 
-    * `:chunk_size` - Lines per check (default: 600)
+    * `:check_interval` - Seconds between checks (default: 5)
 
   ## Examples
 
       LogSimulator.simulate_file("~/Documents/Zwift/Logs/Log.txt")
-      LogSimulator.simulate_file("logs.txt", chunk_size: 1000)
+      LogSimulator.simulate_file("logs.txt", check_interval: 10)
   """
   def simulate_file(path, opts \\ []) do
-    chunk_size = Keyword.get(opts, :chunk_size, 600)
+    check_interval = Keyword.get(opts, :check_interval, @default_check_interval)
 
     with {:ok, expanded_path} <- expand_path(path),
          {:ok, content} <- File.read(expanded_path) do
@@ -39,16 +40,16 @@ defmodule Zdbeam.LogSimulator do
       IO.puts("log: #{expanded_path}")
       IO.puts("size: #{format_bytes(byte_size(content))}, lines: #{length(lines)}\n")
 
-      simulate_checks(lines, chunk_size)
+      simulate_checks(lines, check_interval)
 
       :ok
     else
       {:error, :enoent} ->
-        IO.puts("file_not_found: #{path}")
+        IO.puts("file not found: #{path}")
         {:error, :file_not_found}
 
       {:error, reason} ->
-        IO.puts("read_error: #{inspect(reason)}")
+        IO.puts("read error: #{inspect(reason)}")
         {:error, reason}
     end
   end
@@ -63,32 +64,86 @@ defmodule Zdbeam.LogSimulator do
     end
   end
 
-  defp simulate_checks(lines, chunk_size) do
-    IO.puts("simulating checks: #{chunk_size} lines/check\n")
+  defp simulate_checks(lines, check_interval) do
+    IO.puts("simulating checks: every #{check_interval}s\n")
 
-    {final_state, state_changes} =
-      lines
-      |> Enum.chunk_every(chunk_size)
+    lines_with_time = parse_timestamps(lines)
+
+    case lines_with_time do
+      [] ->
+        IO.puts("no timestamps found")
+        :ok
+
+      lines_with_time ->
+        {start_time, _, _} = hd(lines_with_time)
+        {end_time, _, _} = List.last(lines_with_time)
+
+        duration = time_diff_seconds(start_time, end_time)
+        IO.puts("time range: #{start_time} → #{end_time} (#{format_duration(duration)})\n")
+
+        {final_state, state_changes} =
+          run_time_based_checks(lines_with_time, start_time, check_interval)
+
+        IO.puts("final state: #{format_state(final_state)}")
+        IO.puts("state changes: #{length(state_changes)}\n")
+
+        unless Enum.empty?(state_changes) do
+          state_changes
+          |> Enum.reverse()
+          |> Enum.each(fn change ->
+            IO.puts(
+              "check #{change.check}: [#{change.timestamp}] #{format_state(change.from)} → #{format_state(change.to)}"
+            )
+          end)
+
+          IO.puts("")
+        end
+
+        show_timeline(lines_with_time)
+    end
+  end
+
+  defp parse_timestamps(lines) do
+    for {line, idx} <- Enum.with_index(lines),
+        time = extract_time(line),
+        time != "??:??:??",
+        do: {time, line, idx}
+  end
+
+  defp run_time_based_checks(lines_with_time, _start_time, check_interval) do
+    {first_time, _, _} = hd(lines_with_time)
+    {last_time, _, _} = List.last(lines_with_time)
+
+    check_times = generate_check_times(first_time, last_time, check_interval)
+
+    {final_state, state_changes, _} =
+      check_times
       |> Enum.with_index(1)
-      |> Enum.reduce({nil, []}, fn {chunk, check_num}, {current_state, changes} ->
-        new_state = ZwiftLogParser.parse_log_lines(chunk, current_state)
+      |> Enum.reduce({nil, [], 0}, fn {{_check_time, next_check_time}, check_num},
+                                      {current_state, changes, last_idx} ->
+        new_lines =
+          lines_with_time
+          |> Enum.drop(last_idx)
+          |> Enum.take_while(fn {line_time, _line, _idx} ->
+            time_to_seconds(line_time) < time_to_seconds(next_check_time)
+          end)
 
-        timestamp = extract_time(Enum.at(chunk, 0) || "")
-        line_num = (check_num - 1) * chunk_size
+        lines_to_parse = Enum.map(new_lines, fn {_time, line, _idx} -> line end)
 
-        # Only record meaningful state changes (when formatted output differs)
-        current_formatted = format_state(current_state)
-        new_formatted = format_state(new_state)
+        new_state =
+          case lines_to_parse do
+            [] -> current_state
+            lines -> ZwiftLogParser.parse_log_lines(lines, current_state)
+          end
 
         new_changes =
-          if current_formatted != new_formatted do
+          if format_state(current_state) != format_state(new_state) do
             [
               %{
                 check: check_num,
                 from: current_state,
                 to: new_state,
-                timestamp: timestamp,
-                line: line_num
+                timestamp: next_check_time
               }
               | changes
             ]
@@ -96,34 +151,65 @@ defmodule Zdbeam.LogSimulator do
             changes
           end
 
-        {new_state, new_changes}
+        {new_state, new_changes, last_idx + length(new_lines)}
       end)
 
-    IO.puts("final state: #{format_state(final_state)}")
-    IO.puts("state changes: #{length(state_changes)}\n")
-
-    unless Enum.empty?(state_changes) do
-      state_changes
-      |> Enum.reverse()
-      |> Enum.each(fn change ->
-        IO.puts(
-          "check #{change.check}: [#{change.timestamp}] L#{change.line}: #{format_state(change.from)} → #{format_state(change.to)}"
-        )
-      end)
-
-      IO.puts("")
-    end
-
-    show_timeline(lines)
+    {final_state, state_changes}
   end
 
-  defp show_timeline(lines) do
+  defp generate_check_times(start_time, end_time, interval) do
+    start_seconds = time_to_seconds(start_time)
+    end_seconds = time_to_seconds(end_time)
+
+    check_times =
+      Stream.iterate(start_seconds, &(&1 + interval))
+      |> Enum.take_while(&(&1 <= end_seconds))
+      |> Enum.map(&seconds_to_time/1)
+
+    check_times
+    |> Enum.zip(Enum.drop(check_times, 1) ++ [end_time])
+  end
+
+  defp time_to_seconds(time) do
+    case String.split(time, ":") do
+      [h, m, s] ->
+        String.to_integer(h) * 3600 + String.to_integer(m) * 60 + String.to_integer(s)
+
+      _ ->
+        0
+    end
+  end
+
+  defp seconds_to_time(seconds) do
+    h = div(seconds, 3600)
+    m = div(rem(seconds, 3600), 60)
+    s = rem(seconds, 60)
+
+    "#{String.pad_leading(to_string(h), 2, "0")}:#{String.pad_leading(to_string(m), 2, "0")}:#{String.pad_leading(to_string(s), 2, "0")}"
+  end
+
+  defp time_diff_seconds(start_time, end_time) do
+    time_to_seconds(end_time) - time_to_seconds(start_time)
+  end
+
+  defp format_duration(seconds) when seconds < 60, do: "#{seconds}s"
+
+  defp format_duration(seconds) when seconds < 3600 do
+    "#{div(seconds, 60)}m #{rem(seconds, 60)}s"
+  end
+
+  defp format_duration(seconds) do
+    h = div(seconds, 3600)
+    m = div(rem(seconds, 3600), 60)
+    "#{h}h #{m}m"
+  end
+
+  defp show_timeline(lines_with_time) do
     IO.puts("events:")
 
     events =
-      lines
-      |> Enum.with_index()
-      |> Enum.filter(fn {line, _idx} ->
+      lines_with_time
+      |> Enum.filter(fn {_time, line, _idx} ->
         String.contains?(line, @patterns.save_activity) or
           String.contains?(line, @patterns.set_workout) or
           String.contains?(line, @patterns.completed_workout) or
@@ -139,8 +225,7 @@ defmodule Zdbeam.LogSimulator do
         IO.puts("  none")
 
       events ->
-        Enum.each(events, fn {line, idx} ->
-          time = extract_time(line)
+        Enum.each(events, fn {time, line, idx} ->
           event_type = classify_event(line)
           details = extract_event_details(line, event_type)
 
