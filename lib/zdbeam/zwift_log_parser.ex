@@ -52,11 +52,11 @@ defmodule Zdbeam.ZwiftLogParser do
     even when the app starts mid-ride
   """
 
-  alias Zdbeam.LogPatterns
+  alias Zdbeam.ZwiftLogPatterns
 
   @type activity_type :: :free_ride | :workout | :robo_pacer
 
-  @patterns LogPatterns.patterns()
+  @patterns ZwiftLogPatterns.patterns()
 
   @doc """
   Parses log lines to extract current activity state.

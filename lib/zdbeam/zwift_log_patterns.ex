@@ -1,4 +1,4 @@
-defmodule Zdbeam.LogPatterns do
+defmodule Zdbeam.ZwiftLogPatterns do
   @moduledoc """
   Zwift log pattern strings for matching activity events.
 
@@ -23,7 +23,7 @@ defmodule Zdbeam.LogPatterns do
 
   ## Examples
 
-      iex> Zdbeam.LogPatterns.patterns()
+      iex> Zdbeam.ZwiftLogPatterns.patterns()
       %{
         save_activity: "[SaveActivityService] ZNet::SaveActivity...",
         set_workout: "[Workouts] WorkoutDatabase::SetActiveWorkout(",
@@ -38,10 +38,10 @@ defmodule Zdbeam.LogPatterns do
 
   ## Examples
 
-      iex> Zdbeam.LogPatterns.get(:save_activity)
+      iex> Zdbeam.ZwiftLogPatterns.get(:save_activity)
       "[SaveActivityService] ZNet::SaveActivity calling zwift_network::save_activity with {name:"
 
-      iex> Zdbeam.LogPatterns.get(:set_workout)
+      iex> Zdbeam.ZwiftLogPatterns.get(:set_workout)
       "[Workouts] WorkoutDatabase::SetActiveWorkout("
 
   """

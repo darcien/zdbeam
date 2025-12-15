@@ -12,10 +12,10 @@ defmodule Zdbeam.LogSimulator do
   """
 
   alias Zdbeam.ActivityFormatter
-  alias Zdbeam.LogPatterns
+  alias Zdbeam.ZwiftLogPatterns
   alias Zdbeam.ZwiftLogParser
 
-  @patterns LogPatterns.patterns()
+  @patterns ZwiftLogPatterns.patterns()
   @default_check_interval 5
 
   @doc """

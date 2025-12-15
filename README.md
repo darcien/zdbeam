@@ -57,7 +57,7 @@ For other platforms like Linux or Windows, might work with slight changes but ha
 
 ### Binary Release
 
-No releases available yet.
+Prebuilt binaries are not provided.
 I'm not interested in code-signing at the moment.
 
 ### Building from Source
@@ -193,11 +193,12 @@ events:
 lib/
 ├── zdbeam.ex                   # Public API module
 └── zdbeam/
+    ├── activity_formatter.ex   # Activity data formatting
     ├── application.ex          # OTP Application supervisor & CLI
     ├── discord_rpc.ex          # Discord RPC client (GenServer)
-    ├── log_parser.ex           # Log file parser
-    ├── log_patterns.ex         # Log pattern matching rules
     ├── log_simulator.ex        # Log parsing simulator for debugging
+    ├── zwift_log_parser.ex     # Log file parser
+    ├── zwift_log_patterns.ex   # Log pattern matching rules
     └── zwift_reader.ex         # Zwift activity monitor (GenServer)
 ```
 

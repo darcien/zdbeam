@@ -28,12 +28,14 @@ Discord Rich Presence for Zwift. Pure Elixir implementation, standalone binaries
 **Stack**: Elixir 1.19.2+, OTP 28.2+, Burrito packaging
 
 **Key modules**:
-- `Zdbeam` - CLI entry point
-- `Zdbeam.Application` - OTP supervisor
+- `Zdbeam` - Public API module
+- `Zdbeam.ActivityFormatter` - Format activity data for Discord
+- `Zdbeam.Application` - OTP supervisor & CLI
 - `Zdbeam.DiscordRPC` - Discord RPC client (GenServer)
-- `Zdbeam.ZwiftReader` - Zwift log parser (GenServer)
-- `Zdbeam.LogParser` - Log parsing logic
-- `Zdbeam.LogSimulator` - Debug tool for testing log parsing
+- `Zdbeam.LogSimulator` - Log parsing simulator for debugging
+- `Zdbeam.ZwiftLogParser` - Log file parser
+- `Zdbeam.ZwiftLogPatterns` - Log pattern matching rules
+- `Zdbeam.ZwiftReader` - Zwift activity monitor (GenServer)
 
 **Configuration**: CLI args, not env vars. Required: `--app-id`, optional: `--check-interval`, `--log-level`
 
