@@ -17,15 +17,15 @@ defmodule Zdbeam.ActivityFormatter do
 
       iex> activity = %{type: :workout, workout_name: "FTP Test"}
       iex> Zdbeam.ActivityFormatter.for_log(activity)
-      "workout name=\"FTP Test\""
+      ~s(workout name="FTP Test")
 
       iex> activity = %{type: :free_ride, world: "Watopia", route: "Volcano Circuit"}
       iex> Zdbeam.ActivityFormatter.for_log(activity)
-      "free_ride route=\"Volcano Circuit\" world=\"Watopia\""
+      ~s(free_ride route="Volcano Circuit" world="Watopia")
 
       iex> activity = %{type: :robo_pacer, pacer_name: "Coco", route: "Flat Route"}
       iex> Zdbeam.ActivityFormatter.for_log(activity)
-      "robo_pacer name=\"Coco\" route=\"Flat Route\""
+      ~s(robo_pacer name="Coco" route="Flat Route")
 
   """
   def for_log(nil), do: "idling"

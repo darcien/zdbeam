@@ -8,11 +8,11 @@ defmodule Zdbeam do
 
   ## Examples
 
-      iex> Zdbeam.status()
-      %{
-        zwift: %{zwift_running: true, current_activity: %{...}},
-        discord: %{connected: true}
-      }
+      Zdbeam.status()
+      #=> %{
+      #=>   zwift: %{zwift_running: true, current_activity: %{...}},
+      #=>   discord: %{connected: true}
+      #=> }
 
   """
   def status do

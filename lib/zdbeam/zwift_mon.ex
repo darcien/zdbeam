@@ -47,12 +47,12 @@ defmodule Zdbeam.ZwiftMon do
 
   ## Examples
 
-      iex> Zdbeam.ZwiftMon.get_status()
-      %{
-        zwift_running: true,
-        current_activity: %{type: :workout, workout_name: "FTP Test", ...},
-        activity_start_time: 1234567890
-      }
+      Zdbeam.ZwiftMon.get_status()
+      #=> %{
+      #     zwift_running: true,
+      #     current_activity: %{type: :workout, workout_name: "FTP Test", ...},
+      #     activity_start_time: 1234567890
+      #   }
 
   """
   def get_status do

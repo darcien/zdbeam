@@ -23,12 +23,11 @@ defmodule Zdbeam.ZwiftLogPatterns do
 
   ## Examples
 
-      iex> Zdbeam.ZwiftLogPatterns.patterns()
-      %{
-        save_activity: "[SaveActivityService] ZNet::SaveActivity...",
-        set_workout: "[Workouts] WorkoutDatabase::SetActiveWorkout(",
-        ...
-      }
+      iex> patterns = Zdbeam.ZwiftLogPatterns.patterns()
+      iex> patterns.set_workout
+      "[Workouts] WorkoutDatabase::SetActiveWorkout("
+      iex> patterns.save_activity
+      "[SaveActivityService] ZNet::SaveActivity calling zwift_network::save_activity with {name:"
 
   """
   def patterns, do: @patterns
