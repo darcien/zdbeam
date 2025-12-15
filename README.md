@@ -62,14 +62,7 @@ I'm not interested in code-signing at the moment.
 
 ### Building from Source
 
-```sh
-git clone git@github.com:darcien/zdbeam.git
-cd zdbeam
-mix deps.get
-MIX_ENV=prod mix release zdbeam
-```
-
-Binary output: `burrito_out/zdbeam_macos`
+See the [Development](#development) section below for build instructions.
 
 ## Discord Application Setup
 
@@ -133,7 +126,22 @@ TODO: make the info easier to read
 ```sh
 mix deps.get
 mix test
-mix run --no-halt -- --app-id "YOUR_APP_ID" --log-level debug
+```
+
+### Building
+
+Build standalone binary:
+
+```sh
+MIX_ENV=prod mix release zdbeam
+```
+
+Binary output: `burrito_out/zdbeam_macos`
+
+### Running
+
+```sh
+mix run --no-halt -- --app-id "YOUR_DISCORD_APP_ID" --log-level debug
 ```
 
 ### Debugging Activity Detection
@@ -180,14 +188,6 @@ events:
   [20:02:06] L14108: save_activity world=Watopia
   [20:03:04] L14877: end_activity
 ```
-
-### Building
-
-```sh
-MIX_ENV=prod mix build.prod
-```
-
-Binary output: `burrito_out/zdbeam_macos`
 
 ### Project Structure
 
