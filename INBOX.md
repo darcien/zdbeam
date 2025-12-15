@@ -5,3 +5,4 @@
 - detect race activity
 - detect other events, is group ride a thing?
 - detect climb portal
+- move assets to separate module

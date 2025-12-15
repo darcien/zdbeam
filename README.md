@@ -1,6 +1,10 @@
 # zdbeam
 
-CLI tool that adds Discord Rich Presence integration for Zwift.
+Beam your [Zwift][zwift] activity to [Discord Rich Presence][discord]. Ride on the [BEAM (Erlang VM)][BEAM].
+
+[zwift]: https://www.zwift.com
+[discord]: https://discord.com/developers/docs/rich-presence/overview
+[BEAM]: https://en.wikipedia.org/wiki/BEAM_(Erlang_virtual_machine)
 
 ## Why
 
@@ -16,18 +20,34 @@ So why not?
 
 ## How It Works
 
-1. Monitors Zwift process status
-2. Reads activity data from `~/Documents/Zwift/Logs/Log.txt`
-3. Parses world, route, workout, and RoboPacer information
-4. Updates Discord Rich Presence via local IPC connection
+1. Monitor Zwift process status
+2. Poll activity data from `~/Documents/Zwift/Logs/Log.txt`
+3. Detect notable events: route changes, workouts, RoboPacer rides
+4. Update Discord Rich Presence via local IPC
 
 Zwift, Discord, and zdbeam must all be running on the same machine.
 
-In theory we can have Zwift and Discord run on different machines,
-have zdbeam run on each machine, have each zdbeam connect to each other
-via `Node.connect/1` and have Discord RPC over the network.
+## Non-Goals
 
-I have no need for that at the moment though, so it's unimplemented.
+- **Health metrics tracking**: Power, heart rate, cadence not supported.
+  Not interested in broadcasting private data.
+
+## Future Possibilities
+
+### Distributed Setup
+
+In theory, we could run Zwift and Discord on different machines with zdbeam instances
+on each, connecting via `Node.connect/1` for distributed Discord RPC.
+
+I have no need for this at the moment, so it's unimplemented.
+
+### Alternative Activity Sources
+
+Instead of polling the Zwift log file, pretending to be a Zwift Companion app
+might also work.
+
+But reverse engineering a mobile app is more involved than parsing a log file,
+and I don't see any advantage to that approach at the moment.
 
 ## Screenshots
 
