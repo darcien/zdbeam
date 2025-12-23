@@ -61,12 +61,6 @@ defmodule Zdbeam.ActivityFormatter do
           [] -> "free_ride"
           _ -> "free_ride " <> Enum.join(parts, " ")
         end
-
-      :event ->
-        case activity.event_name do
-          nil -> "event"
-          name -> ~s(event name="#{name}")
-        end
     end
   end
 
@@ -122,10 +116,6 @@ defmodule Zdbeam.ActivityFormatter do
           end
 
         {details, "Free Ride"}
-
-      :event ->
-        details = activity.event_name || "Event"
-        {details, "Event"}
     end
   end
 end
