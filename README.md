@@ -29,7 +29,7 @@ Zwift, Discord, and zdbeam must all be running on the same machine.
 
 ## Non-Goals
 
-- **Health metrics tracking**: Power, heart rate, cadence not supported.
+- Broadcasting detailed numbers like power, heart rate, cadence is out of scope.
   Not interested in broadcasting private data.
 
 ## Future Possibilities
