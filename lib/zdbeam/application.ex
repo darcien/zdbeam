@@ -20,7 +20,7 @@ defmodule Zdbeam.Application do
 
       case parse_and_configure(args) do
         :ok ->
-          Logger.info("starting application")
+          Logger.info("application started")
 
           children = [
             {Zdbeam.ZwiftMon, []},

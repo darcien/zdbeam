@@ -115,12 +115,10 @@ app_id: 0000000000000000000
 check_interval: 5s
 log_level: info
 
-[info] starting application
-[info] starting Zwift activity reader
-[info] initializing Discord RPC: app_id=0000000000000000000
-[info] connected to Discord IPC
-[info] handshake successful
-[info] Zwift detected as running
+[info] application started
+[info] Zwift monitor started
+[info] Discord RPC ready
+[info] Zwift started
 ```
 
 
@@ -142,6 +140,17 @@ log_level: info
 
 ```sh
 mix deps.get
+```
+
+### Running
+
+```sh
+mix run --no-halt -- --app-id "YOUR_DISCORD_APP_ID" --log-level debug
+```
+
+### Testing
+
+```sh
 mix test
 ```
 
@@ -154,12 +163,6 @@ MIX_ENV=prod mix release zdbeam
 ```
 
 Binary output: `burrito_out/zdbeam_macos`
-
-### Running
-
-```sh
-mix run --no-halt -- --app-id "YOUR_DISCORD_APP_ID" --log-level debug
-```
 
 ### Debugging Activity Detection
 

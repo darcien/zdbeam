@@ -63,7 +63,7 @@ defmodule Zdbeam.ZwiftMon do
 
   @impl true
   def init(_opts) do
-    Logger.info("starting Zwift activity reader")
+    Logger.info("Zwift monitor started")
 
     state = %State{
       zwift_running: false,
@@ -119,7 +119,7 @@ defmodule Zdbeam.ZwiftMon do
   end
 
   defp handle_zwift_started(state) do
-    Logger.info("Zwift detected as running")
+    Logger.info("Zwift started")
 
     {activity, new_position} =
       detect_activity_from_log(state.log_position, state.current_activity)
@@ -164,7 +164,7 @@ defmodule Zdbeam.ZwiftMon do
   end
 
   defp handle_zwift_stopped(state) do
-    Logger.info("Zwift no longer running")
+    Logger.info("Zwift stopped")
     Zdbeam.DiscordRPC.clear_presence()
 
     %{

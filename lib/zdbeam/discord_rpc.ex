@@ -86,8 +86,6 @@ defmodule Zdbeam.DiscordRPC do
   def init(_opts) do
     application_id = Application.get_env(:zdbeam, :discord_application_id)
 
-    Logger.info("initializing Discord RPC: app_id=#{application_id}")
-
     state = %State{
       socket: nil,
       application_id: application_id,
@@ -103,31 +101,15 @@ defmodule Zdbeam.DiscordRPC do
 
   @impl true
   def handle_info(:connect, state) do
-    case connect_to_discord() do
-      {:ok, socket} ->
-        Logger.info("connected to Discord IPC")
-
-        case send_handshake(socket, state.application_id) do
-          :ok ->
-            case receive_message(socket) do
-              {:ok, %{"cmd" => "DISPATCH", "evt" => "READY"}} ->
-                Logger.info("handshake successful")
-                {:noreply, %{state | socket: socket, connected: true}}
-
-              {:error, reason} ->
-                Logger.error("handshake response failed: #{inspect(reason)}")
-                schedule_reconnect()
-                {:noreply, state}
-            end
-
-          {:error, reason} ->
-            Logger.error("handshake send failed: #{inspect(reason)}")
-            schedule_reconnect()
-            {:noreply, state}
-        end
-
+    with {:ok, socket} <- connect_to_discord(),
+         :ok <- send_handshake(socket, state.application_id),
+         {:ok, %{"cmd" => "DISPATCH", "evt" => "READY"}} <- receive_message(socket) do
+      Logger.info("Discord RPC ready")
+      new_state = %{state | socket: socket, connected: true}
+      resend_stored_activity(new_state)
+    else
       {:error, reason} ->
-        Logger.warning("connection failed: #{inspect(reason)}, retrying")
+        log_connection_error(reason)
         schedule_reconnect()
         {:noreply, state}
     end
@@ -147,27 +129,8 @@ defmodule Zdbeam.DiscordRPC do
 
   @impl true
   def handle_cast({:update_presence, activity}, %{connected: true} = state) do
-    payload = build_presence_payload(activity)
-    Logger.debug("sending presence: #{inspect(payload)}")
-
-    case send_frame(state.socket, payload) do
-      :ok ->
-        case receive_message(state.socket) do
-          {:ok, response} ->
-            Logger.info("presence updated")
-            Logger.debug("Discord response: #{inspect(response)}")
-            {:noreply, %{state | activity: activity}}
-
-          {:error, reason} ->
-            Logger.warning("no response from Discord: #{inspect(reason)}")
-            {:noreply, %{state | activity: activity}}
-        end
-
-      {:error, reason} ->
-        Logger.error("presence send failed: #{inspect(reason)}")
-        schedule_reconnect()
-        {:noreply, %{state | connected: false}}
-    end
+    Logger.debug("sending presence: #{inspect(build_presence_payload(activity))}")
+    do_send_presence(state, activity)
   end
 
   @impl true
@@ -178,26 +141,7 @@ defmodule Zdbeam.DiscordRPC do
 
   @impl true
   def handle_cast(:clear_presence, %{connected: true} = state) do
-    payload = build_activity_payload(nil)
-
-    case send_frame(state.socket, payload) do
-      :ok ->
-        case receive_message(state.socket) do
-          {:ok, response} ->
-            Logger.info("presence cleared")
-            Logger.debug("Discord response: #{inspect(response)}")
-            {:noreply, %{state | activity: nil}}
-
-          {:error, reason} ->
-            Logger.warning("no response after clear: #{inspect(reason)}")
-
-            {:noreply, %{state | activity: nil}}
-        end
-
-      {:error, reason} ->
-        Logger.error("presence clear failed: #{inspect(reason)}")
-        {:noreply, state}
-    end
+    do_send_presence(state, nil)
   end
 
   @impl true
@@ -230,32 +174,25 @@ defmodule Zdbeam.DiscordRPC do
   end
 
   defp connect_unix_socket do
-    # Try each IPC pipe number
-    Enum.reduce_while(@ipc_pipes, {:error, :not_found}, fn n, _acc ->
-      paths = [
-        get_runtime_dir() <> "/discord-ipc-#{n}",
-        "/tmp/discord-ipc-#{n}"
-      ]
+    @ipc_pipes
+    |> Enum.flat_map(&socket_paths/1)
+    |> Enum.find_value({:error, :not_found}, &try_connect_socket/1)
+  end
 
-      result =
-        Enum.find_value(paths, fn path ->
-          case File.exists?(path) do
-            true ->
-              case :gen_tcp.connect({:local, path}, 0, [:binary, active: false], 1000) do
-                {:ok, socket} -> {:ok, socket}
-                _ -> nil
-              end
+  defp socket_paths(n) do
+    [
+      get_runtime_dir() <> "/discord-ipc-#{n}",
+      "/tmp/discord-ipc-#{n}"
+    ]
+  end
 
-            false ->
-              nil
-          end
-        end)
-
-      case result do
-        {:ok, socket} -> {:halt, {:ok, socket}}
-        nil -> {:cont, {:error, :not_found}}
-      end
-    end)
+  defp try_connect_socket(path) do
+    with true <- File.exists?(path),
+         {:ok, socket} <- :gen_tcp.connect({:local, path}, 0, [:binary, active: false], 1000) do
+      {:ok, socket}
+    else
+      _ -> nil
+    end
   end
 
   defp connect_named_pipe do
@@ -301,7 +238,7 @@ defmodule Zdbeam.DiscordRPC do
          {:ok, data} <- :gen_tcp.recv(socket, length, 5000) do
       case opcode do
         @opcode_close ->
-          Logger.info("Discord sent close: connection terminated")
+          Logger.info("connection closed by Discord")
           {:error, :connection_closed}
 
         _ ->
@@ -322,6 +259,10 @@ defmodule Zdbeam.DiscordRPC do
         Logger.warning("close send failed: #{inspect(error)}")
         error
     end
+  end
+
+  defp build_presence_payload(nil) do
+    build_activity_payload(nil)
   end
 
   defp build_presence_payload(activity) do
@@ -383,5 +324,39 @@ defmodule Zdbeam.DiscordRPC do
 
   defp schedule_reconnect do
     Process.send_after(self(), :reconnect, 5000)
+  end
+
+  defp log_connection_error(:not_found) do
+    Logger.warning("connection failed: Discord not running, retrying in 5s")
+  end
+
+  defp log_connection_error(reason) do
+    Logger.warning("connection failed: #{inspect(reason)}, retrying in 5s")
+  end
+
+  defp resend_stored_activity(%{activity: nil} = state) do
+    {:noreply, state}
+  end
+
+  defp resend_stored_activity(%{activity: activity} = state) do
+    do_send_presence(state, activity)
+  end
+
+  defp do_send_presence(state, activity) do
+    payload = build_presence_payload(activity)
+
+    with :ok <- send_frame(state.socket, payload),
+         {:ok, response} <- receive_message(state.socket) do
+      log_message = if activity, do: "presence updated", else: "presence cleared"
+      Logger.info(log_message)
+      Logger.debug("Discord response: #{inspect(response)}")
+      {:noreply, %{state | activity: activity}}
+    else
+      {:error, reason} ->
+        log_message = if activity, do: "presence send failed", else: "presence clear failed"
+        Logger.error("#{log_message}: #{inspect(reason)}")
+        schedule_reconnect()
+        {:noreply, %{state | connected: false}}
+    end
   end
 end
