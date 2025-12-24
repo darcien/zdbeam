@@ -159,7 +159,7 @@ mix test
 Build standalone binary:
 
 ```sh
-MIX_ENV=prod mix release zdbeam
+mix build.prod
 ```
 
 Binary output: `burrito_out/zdbeam_macos`

@@ -40,9 +40,15 @@ defmodule Zdbeam.MixProject do
     [
       "build.prod": [
         &clean_burrito_cache/1,
+        &set_prod_env/1,
         "release zdbeam --overwrite"
       ]
     ]
+  end
+
+  defp set_prod_env(_) do
+    Mix.env(:prod)
+    :ok
   end
 
   defp clean_burrito_cache(_) do
