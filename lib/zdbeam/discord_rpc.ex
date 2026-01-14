@@ -347,8 +347,7 @@ defmodule Zdbeam.DiscordRPC do
 
     with :ok <- send_frame(state.socket, payload),
          {:ok, response} <- receive_message(state.socket) do
-      log_message = if activity, do: "presence updated", else: "presence cleared"
-      Logger.info(log_message)
+      if is_nil(activity), do: Logger.info("presence cleared")
       Logger.debug("Discord response: #{inspect(response)}")
       {:noreply, %{state | activity: activity}}
     else
