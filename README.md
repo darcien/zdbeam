@@ -27,31 +27,12 @@ So why not?
 
 Zwift, Discord, and zdbeam must all be running on the same machine.
 
-## Non-Goals
-
-- Broadcasting detailed numbers like power, heart rate, cadence is out of scope.
-  Not interested in broadcasting private data.
-
-## Future Possibilities
-
-### Distributed Setup
-
-In theory, we could run Zwift and Discord on different machines with zdbeam instances
-on each, connecting via `Node.connect/1` for distributed Discord RPC.
-
-I have no need for this at the moment, so it's unimplemented.
-
-### Alternative Activity Sources
-
-Instead of polling the Zwift log file, pretending to be a Zwift Companion app
-might also work.
-
-But reverse engineering a mobile app is more involved than parsing a log file,
-and I don't see any advantage to that approach at the moment.
-
 ## Screenshots
 
-TBA.
+| Idle | Free Ride |
+|---|---|
+| ![](./images/idle.jpg) | ![](./images/ride.jpg) |
+
 
 ## Platform Support
 
@@ -77,8 +58,7 @@ For other platforms like Linux or Windows, might work with slight changes but ha
 
 ### Binary Release
 
-Prebuilt binaries are not provided.
-I'm not interested in code-signing at the moment.
+Prebuilt binaries are not provided at the moment.
 
 ### Building from Source
 
@@ -119,6 +99,11 @@ log_level: info
 [info] Zwift monitor started
 [info] Discord RPC ready
 [info] Zwift started
+[info] activity changed: workout name="5x 5 min intensive endurance intervals"
+[info] activity changed: free_ride route="Knights of the Roundabout" world="France"
+[info] activity changed: idling
+[info] Zwift stopped
+[info] presence cleared
 ```
 
 
@@ -224,6 +209,28 @@ lib/
     ├── zwift_log_patterns.ex   # Log pattern matching rules
     └── zwift_mon.ex            # Zwift activity monitor (GenServer)
 ```
+
+## Non-Goals
+
+- Broadcasting detailed numbers like power, heart rate, cadence is out of scope.
+  Not interested in broadcasting private data.
+
+## Future Possibilities
+
+### Distributed Setup
+
+In theory, we could run Zwift and Discord on different machines with zdbeam instances
+on each, connecting via `Node.connect/1` for distributed Discord RPC.
+
+I have no need for this at the moment, so it's unimplemented.
+
+### Alternative Activity Sources
+
+Instead of polling the Zwift log file, pretending to be a Zwift Companion app
+might also work.
+
+But reverse engineering a mobile app is more involved than parsing a log file,
+and I don't see any advantage to that approach at the moment.
 
 ## License
 
